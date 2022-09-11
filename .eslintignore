@@ -7,3 +7,7 @@
 .eslintrc.js
 babel.config.js
 /src-ssr
+
+/src/models
+
+src\models

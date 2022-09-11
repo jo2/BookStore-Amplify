@@ -1,0 +1,15 @@
+{
+  "staging": {
+    "awscloudformation": {
+      "AuthRoleName": "amplify-adessobookstore-staging-111130-authRole",
+      "UnauthRoleArn": "arn:aws:iam::737569637536:role/amplify-adessobookstore-staging-111130-unauthRole",
+      "AuthRoleArn": "arn:aws:iam::737569637536:role/amplify-adessobookstore-staging-111130-authRole",
+      "Region": "eu-central-1",
+      "DeploymentBucketName": "amplify-adessobookstore-staging-111130-deployment",
+      "UnauthRoleName": "amplify-adessobookstore-staging-111130-unauthRole",
+      "StackName": "amplify-adessobookstore-staging-111130",
+      "StackId": "arn:aws:cloudformation:eu-central-1:737569637536:stack/amplify-adessobookstore-staging-111130/524b4d10-30f9-11ed-b425-027109781128",
+      "AmplifyAppId": "d38f46gruw8tzb"
+    }
+  }
+}

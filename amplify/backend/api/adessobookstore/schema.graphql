@@ -1,0 +1,16 @@
+type Author @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  firstName: String
+  lastName: String
+  birthDate: AWSDate
+  books: [Book] @hasMany(indexName: "byAuthor", fields: ["id"])
+}
+
+type Book @model @auth(rules: [{allow: public}]) {
+  id: ID!
+  title: String
+  year: Int
+  price: Float
+  isbn: String
+  authorID: ID! @index(name: "byAuthor")
+}
