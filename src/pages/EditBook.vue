@@ -2,32 +2,12 @@
   <q-page class="q-pa-md">
     <p class="text-h3">{{ book ? 'Edit book' : 'Create book' }}</p>
 
-    <div v-if="book" class="q-mb-lg">
-      <q-btn icon="delete" @click="deleteFlag = true" label="Delete" color="red"/>
-
-      <q-dialog v-model="deleteFlag" persistent>
-        <q-card>
-          <q-card-section class="row items-center">
-            <span class="q-ml-sm">Do you really want to delete the book {{ title }}?</span>
-          </q-card-section>
-
-          <q-card-actions align="right">
-            <q-btn flat label="Cancel" color="primary" @click="deleteFlag = false"
-                   v-close-popup/>
-
-            <q-btn flat label="Delete" color="danger" @click="deleteBook"
-                   v-close-popup/>
-          </q-card-actions>
-        </q-card>
-      </q-dialog>
-    </div>
-
     <q-form @submit="saveBook" @reset="reset">
       <q-input outlined v-model="title" placeholder="Title of the book" label="Title"
                class="q-pb-lg" :rules="titleRules"/>
 
-      <q-select :rules="authorRules" v-model="author" :options="authors" outlined
-                label="Author" emit-value map-options/>
+      <q-select :rules="authorRules" v-model="authorID" emit-value map-options
+                :options="authorStore.getAuthorSelectOptions" outlined label="Author" />
 
       <q-input outlined v-model.number="year" placeholder="Year of the book" label="Year"
                class="q-pb-lg" :rules="yearRules" type="number"/>
@@ -35,10 +15,30 @@
       <q-input outlined v-model.number="price" mask="#.##" placeholder="Price of the book"
                label="Price" class="q-pb-lg" :rules="priceRules" type="number"/>
 
-      <q-input outlined v-model="isbn" placeholder="ISBN of the book" label="ISBN" class="q-pb-lg"
-               :rules="isbnRules"/>
+      <q-input outlined v-model="isbn" placeholder="ISBN of the book" label="ISBN"
+               class="q-pb-lg" :rules="isbnRules"/>
 
       <div>
+        <div v-if="book" class="q-mb-lg">
+          <q-btn icon="delete" @click="deleteFlag = true" label="Delete" color="red"/>
+
+          <q-dialog v-model="deleteFlag" persistent>
+            <q-card>
+              <q-card-section class="row items-center">
+                <span class="q-ml-sm">Do you really want to delete the book {{ title }}?</span>
+              </q-card-section>
+
+              <q-card-actions align="right">
+                <q-btn flat label="Cancel" color="primary" @click="deleteFlag = false"
+                       v-close-popup/>
+
+                <q-btn flat label="Delete" color="danger" @click="deleteBook"
+                       v-close-popup/>
+              </q-card-actions>
+            </q-card>
+          </q-dialog>
+        </div>
+
         <q-btn icon="save" label="Save" type="submit" color="primary" class="q-mr-md"/>
 
         <q-btn icon="close" label="Cancel" type="reset" color="red"/>
@@ -50,44 +50,23 @@
 <script setup lang="ts">
 import { ref, Ref } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { DataStore } from '@aws-amplify/datastore';
-import { Author, Book } from '../models';
+import { useAuthorStore } from 'stores/author-store';
+import { useBookStore } from 'stores/book-store';
+import { Book } from '../models';
 
-const props = defineProps({
-  books: {
-    type: Array as () => Array<Book>,
-    require: true,
-  },
-  authors: {
-    type: Array as () => Array<Author>,
-    require: true,
-    default: () => ([] as Array<Author>),
-  },
-});
-
-let authors;
-if (props.authors?.length > 0) {
-  authors = props.authors?.map((author) => ({
-    value: author.id,
-    label: `${author.lastName}, ${author.firstName}`,
-  }));
-} else {
-  authors = (await DataStore.query(Author)).map((author) => ({
-    value: author.id,
-    label: `${author.lastName}, ${author.firstName}`,
-  }));
-}
-
+const authorStore = useAuthorStore();
+const bookStore = useBookStore();
 const route = useRoute();
 const router = useRouter();
 
+let book: Book;
+const deleteFlag: Ref<boolean> = ref(false);
+
 let title: Ref<string>;
-let author: Ref<string|null>;
+let authorID: Ref<string>;
 let year: Ref<number>;
 let price: Ref<number>;
 let isbn: Ref<string>;
-const deleteFlag: Ref<boolean> = ref(false);
-let book: Book | undefined;
 
 const titleRules = [
   (val: string) => !!val || 'Title must not be empty',
@@ -110,42 +89,37 @@ const isbnRules = [
 ];
 
 if (route.params.id) {
-  book = props.books?.find((b) => b.id === (route.params.id as string));
-  if (!book) {
-    book = await DataStore.query(Book, (route.params.id as string));
-  }
-  title = book?.title ? ref(book.title) : ref('');
-  author = book?.authorID ? ref(book.authorID) : ref(null);
-  year = book?.year ? ref(book.year) : ref(0);
-  price = book?.price ? ref(book.price) : ref(0);
-  isbn = book?.isbn ? ref(book.isbn) : ref('');
+  book = bookStore.getBookById(route.params.id as string) as Book;
+  title = book.title ? ref(book.title) : ref('');
+  authorID = book.authorID ? ref(book.authorID) : ref('');
+  price = book.price ? ref(book.price) : ref(0);
+  year = book.year ? ref(book.year) : ref(new Date().getFullYear());
+  isbn = book.isbn ? ref(book.isbn) : ref('');
 } else {
   title = ref('');
-  author = ref(null);
-  year = ref(0);
+  authorID = ref('');
   price = ref(0);
+  year = ref(new Date().getFullYear());
   isbn = ref('');
 }
 
 async function saveBook() {
   if (book) {
-    await DataStore.save(Book.copyOf(book, (item) => {
+    await bookStore.updateBook(Book.copyOf(book, (item) => {
       item.title = title.value;
-      item.price = (price.value as number);
-      item.year = (year.value as number);
+      item.authorID = authorID.value;
+      item.price = price.value;
+      item.year = year.value;
       item.isbn = isbn.value;
-      item.authorID = author.value ? author.value : '';
     }));
   } else {
-    await DataStore.save(
-      new Book({
-        title: title.value,
-        year: (year.value as number),
-        price: (price.value as number),
-        isbn: isbn.value,
-        authorID: author.value ? author.value : '',
-      }),
-    );
+    await bookStore.createBook(new Book({
+      title: title.value,
+      authorID: authorID.value,
+      price: price.value,
+      year: year.value,
+      isbn: isbn.value,
+    }));
   }
   await router.push('/books');
 }
@@ -156,7 +130,7 @@ async function reset() {
 
 async function deleteBook() {
   if (book) {
-    await DataStore.delete(book);
+    await bookStore.deleteBook(book);
     await router.push('/books');
   }
 }

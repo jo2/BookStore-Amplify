@@ -10,6 +10,11 @@
       "StackName": "amplify-adessobookstore-staging-111130",
       "StackId": "arn:aws:cloudformation:eu-central-1:737569637536:stack/amplify-adessobookstore-staging-111130/524b4d10-30f9-11ed-b425-027109781128",
       "AmplifyAppId": "d38f46gruw8tzb"
+    },
+    "categories": {
+      "auth": {
+        "adessobookstore": {}
+      }
     }
   }
 }

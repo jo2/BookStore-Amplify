@@ -4,11 +4,8 @@
 
     <q-btn icon="add" to="/edit-book" label="Add book" class="q-mb-md" color="primary"/>
 
-    <q-table title="Books" :rows="props.books" :columns="columns" row-key="name" flat bordered>
-      <template v-slot:body-cell-authorID="props">
-        <q-td key="authorID" :props="props">{{ getAuthorName(props.row.authorID) }}</q-td>
-      </template>
-
+    <q-table title="Books" :rows="bookStore.getBookViewObjects" :columns="columns"
+             row-key="name" flat bordered :grid="$q.screen.lt.sm">
       <template v-slot:body-cell-actions="props">
         <q-td key="actions" :props="props">
           <q-btn icon="edit" :to="`/edit-book/${props.row.id}`" label="Edit" color="primary"
@@ -20,20 +17,9 @@
 </template>
 
 <script setup lang="ts">
-import { Author, Book } from 'src/models';
+import { useBookStore } from 'stores/book-store';
 
-const props = defineProps({
-  books: {
-    type: Array as () => Array<Book>,
-    require: true,
-    default: () => ([] as Array<Book>),
-  },
-  authors: {
-    type: Array as () => Array<Author>,
-    require: true,
-    default: () => ([] as Array<Author>),
-  },
-});
+const bookStore = useBookStore();
 
 const columns = [
   {
@@ -43,8 +29,8 @@ const columns = [
     sortable: true,
   },
   {
-    name: 'authorID',
-    field: 'authorID',
+    name: 'author',
+    field: 'author',
     label: 'Author',
     sortable: true,
   },
@@ -72,10 +58,4 @@ const columns = [
     label: 'Actions',
   },
 ];
-
-function getAuthorName(id: string) {
-  return props.authors
-    .filter((author) => author.id === id)
-    .map((author) => `${author.lastName}, ${author.firstName}`)[0];
-}
 </script>
