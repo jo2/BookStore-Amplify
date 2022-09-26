@@ -1,6 +1,6 @@
 <template>
   <q-layout view="lHh Lpr lFf">
-    <!--<authenticator>
+    <authenticator>
       <template v-slot:header>
         <q-header elevated>
           <q-toolbar>
@@ -11,7 +11,7 @@
         </q-header>
       </template>
 
-      <template v-slot="{ user, signOut }">-->
+      <template v-slot="{ user, signOut }">
         <q-header elevated>
           <q-toolbar>
             <q-toolbar-title>
@@ -19,8 +19,11 @@
             </q-toolbar-title>
 
             <div>
-              <!--<span class="q-mr-md">{{ getName(user) }}</span>
-              <q-btn flat @click="signOut">Sign Out</q-btn>-->
+              <span class="q-mr-md">
+                {{ user.getSignInUserSession().getIdToken().payload.family_name }},
+                {{ user.getSignInUserSession().getIdToken().payload.given_name }}
+              </span>
+              <q-btn flat @click="signOut">Sign Out</q-btn>
             </div>
           </q-toolbar>
         </q-header>
@@ -37,22 +40,22 @@
             <q-route-tab icon="school" label="Authors" @click="toAuthors"/>
           </q-tabs>
         </q-footer>
-      <!--</template>
-    </authenticator>-->
+      </template>
+    </authenticator>
   </q-layout>
 </template>
 
 <script setup lang="ts">
 import { Authenticator } from '@aws-amplify/ui-vue';
 import '@aws-amplify/ui-vue/styles.css';
-import { Amplify } from 'aws-amplify';
 import { DataStore } from '@aws-amplify/datastore';
 import { Author, Book } from 'src/models';
 import { onBeforeUnmount } from 'vue';
 import { useRouter } from 'vue-router';
 import { useAuthorStore } from 'stores/author-store';
 import { useBookStore } from 'stores/book-store';
-import awsConfig from './aws-exports.js';
+import { Amplify } from 'aws-amplify';
+import awsConfig from './aws-exports';
 
 Amplify.configure(awsConfig);
 
