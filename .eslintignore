@@ -11,3 +11,5 @@ babel.config.js
 /src/models
 
 src\models
+
+amplify-codegen-temp\models

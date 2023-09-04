@@ -1,4 +1,6 @@
 import { ModelInit, MutableModel } from "@aws-amplify/datastore";
+// @ts-ignore
+import { LazyLoading, LazyLoadingDisabled, AsyncCollection } from "@aws-amplify/datastore";
 
 type AuthorMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
@@ -8,7 +10,7 @@ type BookMetaData = {
   readOnlyFields: 'createdAt' | 'updatedAt';
 }
 
-export declare class Author {
+type EagerAuthor = {
   readonly id: string;
   readonly firstName?: string | null;
   readonly lastName?: string | null;
@@ -16,11 +18,25 @@ export declare class Author {
   readonly books?: (Book | null)[] | null;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Author, AuthorMetaData>);
-  static copyOf(source: Author, mutator: (draft: MutableModel<Author, AuthorMetaData>) => MutableModel<Author, AuthorMetaData> | void): Author;
 }
 
-export declare class Book {
+type LazyAuthor = {
+  readonly id: string;
+  readonly firstName?: string | null;
+  readonly lastName?: string | null;
+  readonly birthDate?: string | null;
+  readonly books: AsyncCollection<Book>;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Author = LazyLoading extends LazyLoadingDisabled ? EagerAuthor : LazyAuthor
+
+export declare const Author: (new (init: ModelInit<Author, AuthorMetaData>) => Author) & {
+  copyOf(source: Author, mutator: (draft: MutableModel<Author, AuthorMetaData>) => MutableModel<Author, AuthorMetaData> | void): Author;
+}
+
+type EagerBook = {
   readonly id: string;
   readonly title?: string | null;
   readonly year?: number | null;
@@ -29,6 +45,21 @@ export declare class Book {
   readonly authorID: string;
   readonly createdAt?: string | null;
   readonly updatedAt?: string | null;
-  constructor(init: ModelInit<Book, BookMetaData>);
-  static copyOf(source: Book, mutator: (draft: MutableModel<Book, BookMetaData>) => MutableModel<Book, BookMetaData> | void): Book;
+}
+
+type LazyBook = {
+  readonly id: string;
+  readonly title?: string | null;
+  readonly year?: number | null;
+  readonly price?: number | null;
+  readonly isbn?: string | null;
+  readonly authorID: string;
+  readonly createdAt?: string | null;
+  readonly updatedAt?: string | null;
+}
+
+export declare type Book = LazyLoading extends LazyLoadingDisabled ? EagerBook : LazyBook
+
+export declare const Book: (new (init: ModelInit<Book, BookMetaData>) => Book) & {
+  copyOf(source: Book, mutator: (draft: MutableModel<Book, BookMetaData>) => MutableModel<Book, BookMetaData> | void): Book;
 }
